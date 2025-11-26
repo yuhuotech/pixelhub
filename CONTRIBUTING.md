@@ -78,6 +78,24 @@
 
 ## 开发规范
 
+### 数据库配置
+
+本地开发使用 SQLite，无需额外配置：
+
+```bash
+# .env 文件（开发环境）
+DATABASE_URL="file:./dev.db"
+```
+
+数据库会在首次启动时自动创建。如需重置数据库：
+
+```bash
+# 重置数据库（删除所有数据）
+rm dev.db
+npx prisma db push  # 重新创建表结构
+npx prisma db seed  # 创建默认管理员用户
+```
+
 ### 代码风格
 
 - 使用 TypeScript

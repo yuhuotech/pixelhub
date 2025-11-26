@@ -153,35 +153,89 @@ DATABASE_URL="postgresql://user:password@localhost:5432/pixelhub"
 
 ### Vercel 部署（推荐）
 
+**步骤 1: 创建 Vercel Postgres 数据库**
+
 1. Fork 本项目到你的 GitHub
 2. 在 [Vercel](https://vercel.com) 导入项目
-3. 配置环境变量
-4. 部署完成
+3. 在项目 Storage 标签页创建 Postgres 数据库
+4. Vercel 自动添加 `DATABASE_URL` 环境变量
+5. 部署完成
+
+Vercel Postgres 提供免费方案，自动配置连接字符串，无需手动设置。
+
+**选项: 使用 Supabase（免费方案）**
+
+如果不想使用 Vercel Postgres，也可以选择 Supabase：
+
+1. 在 [Supabase](https://supabase.com) 创建免费 PostgreSQL 数据库
+2. 复制连接字符串
+3. 在 Vercel 项目设置中添加环境变量 `DATABASE_URL`
 
 ### Docker 部署
+
+**本地使用 SQLite**
 
 ```bash
 # 构建镜像
 docker build -t pixelhub .
 
-# 运行容器
+# 运行容器（使用 SQLite）
 docker run -d \
   -p 3003:3003 \
-  -e DATABASE_URL="your_database_url" \
+  -e DATABASE_URL="file:./dev.db" \
   -e STORAGE_TYPE="local" \
   --name pixelhub \
   pixelhub
 ```
 
+**连接外部 PostgreSQL**
+
+```bash
+# 运行容器（连接 PostgreSQL）
+docker run -d \
+  -p 3003:3003 \
+  -e DATABASE_URL="postgresql://user:password@host:5432/pixelhub" \
+  -e STORAGE_TYPE="local" \
+  --name pixelhub \
+  pixelhub
+```
+
+**使用 Docker Compose**
+
+```bash
+# 查看 docker-compose.yml 配置数据库和应用
+docker-compose up -d
+```
+
 ### 传统部署
+
+**本地或服务器上运行**
 
 ```bash
 # 构建生产版本
 pnpm build
 
-# 启动生产服务器
+# 启动生产服务器（本地 SQLite）
 pnpm start
+
+# 或使用 PostgreSQL（生产推荐）
+# DATABASE_URL="postgresql://..." pnpm start
 ```
+
+### 数据库选择指南
+
+| 部署方式 | 推荐数据库 | 说明 |
+|---------|----------|------|
+| **本地开发** | SQLite | 开箱即用，无需配置 |
+| **Docker 本地** | SQLite | 简单快速，适合演示 |
+| **Docker 生产** | PostgreSQL | 性能和稳定性更好 |
+| **Vercel 部署** | Vercel Postgres | 官方支持，自动配置，推荐 |
+| **其他云平台** | PostgreSQL | Supabase、Railway、阿里云等 |
+
+**重要提示：**
+- Vercel 文件系统为只读，**不支持 SQLite**，必须使用 PostgreSQL
+- 本地 SQLite 数据库文件位置：`./dev.db`（git 已忽略）
+- Prisma 自动支持 SQLite 和 PostgreSQL，无需修改代码
 
 ---
 

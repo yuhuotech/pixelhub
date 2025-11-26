@@ -53,13 +53,12 @@ export async function POST(request: Request) {
             })
         })
 
-        if (!response.ok) {
-            const errorData = await response.json()
-            console.error('GitHub API Error:', errorData)
-            return NextResponse.json({ error: 'Failed to upload to GitHub', details: errorData }, { status: response.status })
-        }
-
         const data = await response.json()
+
+        if (!response.ok) {
+            console.error('GitHub API Error:', data)
+            return NextResponse.json({ error: 'Failed to upload to GitHub', details: data }, { status: response.status })
+        }
 
         // Use local proxy URL: /file/uploads/YYYYMM/timestamp-filename
         const proxyUrl = `${new URL(request.url).origin}/file/${path}`

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelHub - 现代化开源图床系统</title>
+    <meta name="description" content="PixelHub 是一个功能强大、界面优雅的开源图床系统，支持多种云存储后端，提供丰富的上传方式和便捷的图片管理功能。">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-slate-50 text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-2">
+                    <img src="./ph_logo_160.png" alt="PixelHub Logo" class="w-8 h-8 rounded-lg">
+                    <span class="font-bold text-xl tracking-tight">PixelHub</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-slate-600 hover:text-primary transition-colors font-medium">功能特性</a>
+                    <a href="#backends" class="text-slate-600 hover:text-primary transition-colors font-medium">存储支持</a>
+                    <a href="#deploy" class="text-slate-600 hover:text-primary transition-colors font-medium">快速部署</a>
+                    <a href="https://github.com/yuhuotech/pixelhub" target="_blank"
+                        class="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-full hover:bg-slate-800 transition-all hover:shadow-lg transform hover:-translate-y-0.5">
+                        <i data-lucide="github" class="w-4 h-4"></i>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-slate-600 hover:text-slate-900 focus:outline-none"
+                        onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="hidden md:hidden bg-white border-t border-slate-100 absolute w-full" id="mobile-menu">
+            <div class="px-4 pt-2 pb-6 space-y-2 shadow-lg">
+                <a href="#features"
+                    class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary hover:bg-slate-50">功能特性</a>
+                <a href="#backends"
+                    class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary hover:bg-slate-50">存储支持</a>
+                <a href="#deploy"
+                    class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary hover:bg-slate-50">快速部署</a>
+                <a href="https://github.com/yuhuotech/pixelhub"
+                    class="block px-3 py-2 rounded-md text-base font-medium text-primary font-bold">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <!-- Background Blobs -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full z-0 pointer-events-none">
+            <div
+                class="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob">
+            </div>
+            <div
+                class="absolute top-20 right-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000">
+            </div>
+            <div
+                class="absolute -bottom-8 left-1/2 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000">
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-sm font-medium mb-8 animate-fade-in-up">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                v1.0.0 正式发布
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 mb-6 leading-tight">
+                您的个人专属 <br>
+                <span class="gradient-text">现代化图床系统</span>
+            </h1>
+            <p class="mt-4 text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+                PixelHub 是一个开源、美观且功能强大的图片托管解决方案。支持多存储后端，提供极致的上传体验和优雅的图片管理功能。
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#deploy"
+                    class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 gradient-bg rounded-full hover:shadow-lg hover:shadow-blue-500/30 transform hover:-translate-y-1">
+                    立即开始
+                    <i data-lucide="arrow-right" class="ml-2 w-5 h-5"></i>
+                </a>
+                <a href="https://github.com/yuhuotech/pixelhub" target="_blank"
+                    class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-slate-700 transition-all duration-200 bg-white border border-slate-200 rounded-full hover:bg-slate-50 hover:border-slate-300 hover:shadow-md">
+                    <i data-lucide="star" class="mr-2 w-5 h-5 text-yellow-500"></i>
+                    Star on GitHub
+                </a>
+            </div>
+
+            <!-- Preview Image Placeholder -->
+            <div
+                class="mt-20 relative max-w-5xl mx-auto rounded-2xl shadow-2xl border border-slate-200/60 overflow-hidden bg-white">
+                <div
+                    class="absolute top-0 w-full h-8 bg-slate-50 border-b border-slate-100 flex items-center px-4 gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                </div>
+                <!-- Screenshot -->
+                <div class="pt-8 pb-0 px-0 bg-slate-50">
+                    <img src="./screenshot01.png" alt="PixelHub Dashboard" class="w-full h-auto">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">精心打造的核心功能</h2>
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto">每一个细节都经过深思熟虑，只为提供最流畅的图片管理体验。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div
+                    class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">多种上传方式</h3>
+                    <p class="text-slate-600 leading-relaxed">支持拖拽上传、点击上传。更支持 Ctrl+V 粘贴上传和 URL 网络图片自动抓取上传。</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div
+                    class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="database" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">多存储后端</h3>
+                    <p class="text-slate-600 leading-relaxed">无缝集成腾讯云 COS、阿里云 OSS、GitHub、Gitee 和本地存储，按需切换。</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div
+                    class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="search" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">实时搜索</h3>
+                    <p class="text-slate-600 leading-relaxed">毫秒级响应的实时搜索功能，让您在海量图片中瞬间找到所需内容。</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div
+                    class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="calendar" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">时间轴视图</h3>
+                    <p class="text-slate-600 leading-relaxed">按年月自动分组的时间轴视图，让图片管理井井有条，回忆触手可及。</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div
+                    class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">安全可靠</h3>
+                    <p class="text-slate-600 leading-relaxed">支持访问密码保护，回收站软删除机制，防止误删，数据安全有保障。</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div
+                    class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="moon" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">深色模式</h3>
+                    <p class="text-slate-600 leading-relaxed">完美适配的深色模式，呵护您的双眼，提供沉浸式的使用体验。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Storage Backends -->
+    <section id="backends" class="py-24 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">广泛的存储支持</h2>
+                <p class="text-lg text-slate-600">无论您倾向于云服务还是私有部署，PixelHub 都能满足。</p>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-6 md:gap-10">
+                <div class="flex items-center gap-3 px-6 py-4 bg-white rounded-xl shadow-sm border border-slate-200">
+                    <i data-lucide="cloud" class="w-8 h-8 text-blue-600"></i>
+                    <span class="font-semibold text-slate-700">腾讯云 COS</span>
+                </div>
+                <div class="flex items-center gap-3 px-6 py-4 bg-white rounded-xl shadow-sm border border-slate-200">
+                    <img src="https://img.alicdn.com/tfs/TB1_ZXuNcfpK1RjSZFOXXa6nFXa-32-32.ico" alt="Aliyun OSS"
+                        class="w-8 h-8">
+                    <span class="font-semibold text-slate-700">阿里云 OSS</span>
+                </div>
+                <div class="flex items-center gap-3 px-6 py-4 bg-white rounded-xl shadow-sm border border-slate-200">
+                    <i data-lucide="github" class="w-8 h-8 text-slate-800"></i>
+                    <span class="font-semibold text-slate-700">GitHub</span>
+                </div>
+                <div class="flex items-center gap-3 px-6 py-4 bg-white rounded-xl shadow-sm border border-slate-200">
+                    <div
+                        class="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                        G</div>
+                    <span class="font-semibold text-slate-700">Gitee</span>
+                </div>
+                <div class="flex items-center gap-3 px-6 py-4 bg-white rounded-xl shadow-sm border border-slate-200">
+                    <i data-lucide="hard-drive" class="w-8 h-8 text-blue-500"></i>
+                    <span class="font-semibold text-slate-700">本地存储</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deployment Section -->
+    <section id="deploy" class="py-24 bg-white">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
+                <div class="grid md:grid-cols-2">
+                    <div class="p-10 md:p-12">
+                        <h2 class="text-3xl font-bold text-white mb-6">准备好部署了吗？</h2>
+                        <p class="text-slate-400 mb-8 text-lg">仅需几行命令，即可拥有属于您的现代化图床。</p>
+
+                        <div class="space-y-6">
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold shrink-0">
+                                    1</div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">克隆仓库</h4>
+                                    <p class="text-slate-500 text-sm">下载源码到本地</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold shrink-0">
+                                    2</div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">安装依赖</h4>
+                                    <p class="text-slate-500 text-sm">使用 pnpm 或 npm 安装</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold shrink-0">
+                                    3</div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">启动服务</h4>
+                                    <p class="text-slate-500 text-sm">开始您的图床之旅</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-10">
+                            <a href="https://github.com/yuhuotech/pixelhub#readme" target="_blank"
+                                class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                                查看完整部署文档
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800/50 p-8 flex flex-col justify-center border-l border-slate-700/50">
+                        <div
+                            class="bg-slate-950 rounded-xl p-6 font-mono text-sm text-slate-300 shadow-inner overflow-x-auto">
+                            <div class="flex gap-2 mb-4 border-b border-slate-800 pb-4">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            </div>
+                            <div class="space-y-2">
+                                <p><span class="text-purple-400">git</span> clone
+                                    https://github.com/yuhuotech/pixelhub.git</p>
+                                <p><span class="text-blue-400">cd</span> pixelhub</p>
+                                <p><span class="text-green-400">pnpm</span> install</p>
+                                <p><span class="text-slate-500"># 配置 .env 文件...</span></p>
+                                <p><span class="text-green-400">pnpm</span> dev</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-50 border-t border-slate-200 py-12">
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <img src="./ph_logo_160.png" alt="PixelHub Logo" class="w-6 h-6 rounded-md">
+                <span class="font-bold text-slate-900">PixelHub</span>
+            </div>
+            <div class="text-slate-500 text-sm">
+                © 2025 PixelHub. Released under the Apache-2.0 License.
+            </div>
+            <div class="flex gap-6">
+                <a href="#" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                </a>
+                <a href="#" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i data-lucide="twitter" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                navbar.classList.add('bg-white/80', 'backdrop-blur-md', 'shadow-sm');
+            } else {
+                navbar.classList.remove('bg-white/80', 'backdrop-blur-md', 'shadow-sm');
+            }
+        });
+    </script>
+    <style>
+        @keyframes blob {
+            0% {
+                transform: translate(0px, 0px) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+
+            100% {
+                transform: translate(0px, 0px) scale(1);
+            }
+        }
+
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+    </style>
+</body>
+
+</html>

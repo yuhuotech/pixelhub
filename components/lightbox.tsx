@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronLeft, ChevronRight, Trash2, Check, ExternalLink, Code, Copy, Share2 } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Trash2, Check, ExternalLink, Code, Copy, Share2, Download, Link } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LightboxProps {
@@ -92,6 +92,29 @@ export default function Lightbox({ images, initialIndex, isOpen, onClose, onDele
             console.error('Failed to copy image:', error)
             alert('复制图片失败')
         }
+    }
+
+    const handleDownload = async () => {
+        try {
+            const response = await fetch(currentImage.url)
+            const blob = await response.blob()
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = currentImage.filename || 'image'
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+        } catch (error) {
+            console.error('Failed to download image:', error)
+            alert('下载图片失败')
+        }
+    }
+
+    const handleCopyOriginUrl = () => {
+        const originUrl = currentImage.originUrl || currentImage.url
+        copyToClipboard(originUrl, 'originUrl')
     }
 
     useEffect(() => {
@@ -215,6 +238,22 @@ export default function Lightbox({ images, initialIndex, isOpen, onClose, onDele
                                 title="复制 Markdown"
                             >
                                 {copied === 'md' ? <Check className="w-4 h-4 text-green-400" /> : <Code className="w-4 h-4" />}
+                            </button>
+
+                            <button
+                                onClick={handleCopyOriginUrl}
+                                className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                                title="复制原始链接"
+                            >
+                                {copied === 'originUrl' ? <Check className="w-4 h-4 text-green-400" /> : <Link className="w-4 h-4" />}
+                            </button>
+
+                            <button
+                                onClick={handleDownload}
+                                className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                                title="下载图片"
+                            >
+                                <Download className="w-4 h-4" />
                             </button>
 
                             <div className="h-4 w-px bg-white/20" />

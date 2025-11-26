@@ -5,7 +5,7 @@
 ![PixelHub](https://img.shields.io/badge/PixelHub-v1.0.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.0-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/license-Apache%202.0-green)
 
 **现代化、多存储后端的个人图床解决方案**
 
@@ -276,7 +276,7 @@ pnpm start
 
 ## 📝 开源协议
 
-本项目采用 [MIT](./LICENSE) 协议开源。
+本项目采用 [Apache License 2.0](./LICENSE) 协议开源。
 
 ---
 

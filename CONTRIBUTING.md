@@ -8,7 +8,7 @@
 
 如果你发现了 bug，请：
 
-1. 在 [Issues](https://github.com/yourusername/pixelhub/issues) 中搜索是否已有相关问题
+1. 在 [Issues](https://github.com/yuhuotech/pixelhub/issues) 中搜索是否已有相关问题
 2. 如果没有，创建一个新的 Issue，包含：
    - 清晰的标题和描述
    - 复现步骤
@@ -26,7 +26,7 @@
 
 1. **Fork 项目**
    ```bash
-   git clone https://github.com/yourusername/pixelhub.git
+   git clone https://github.com/yuhuotech/pixelhub.git
    cd pixelhub
    ```
 
@@ -118,7 +118,7 @@ export default function Component({ title, onClick }: ComponentProps) {
 
 - 在 Issues 中提问
 - 加入我们的讨论组
-- 发送邮件至 your.email@example.com
+- 发送邮件至 hongmw@yuhuotech.com
 
 ## 行为准则
 

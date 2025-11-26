@@ -76,7 +76,7 @@ PixelHub 是一个功能强大、界面优雅的开源图床系统，支持多�
 1. **克隆项目**
 
 ```bash
-git clone https://github.com/yourusername/pixelhub.git
+git clone https://github.com/yuhuotech/pixelhub.git
 cd pixelhub
 ```
 
@@ -248,13 +248,7 @@ pnpm start
 ## 📸 截图预览
 
 ### 主界面
-![主界面](./docs/screenshots/main.png)
-
-### 上传界面
-![上传界面](./docs/screenshots/upload.png)
-
-### 时间轴视图
-![时间轴视图](./docs/screenshots/timeline.png)
+![主界面](https://raw.githubusercontent.com/yuhuotech/yh-image/main/uploads/202511/1764143576089-Paste_20251126_155256.png)
 
 ---
 
@@ -296,7 +290,7 @@ pnpm start
 
 ## 📮 联系方式
 
-- 提交 Issue: [GitHub Issues](https://github.com/yourusername/pixelhub/issues)
+- 提交 Issue: [GitHub Issues](https://github.com/yuhuotech/pixelhub/issues)
 - 邮箱: your.email@example.com
 
 ---
@@ -305,6 +299,6 @@ pnpm start
 
 **如果这个项目对你有帮助，请给一个 ⭐️ Star 支持一下！**
 
-Made with ❤️ by [Your Name](https://github.com/yourusername)
+Made with ❤️ by [YuhuoTech](https://github.com/yuhuotech)
 
 </div>

@@ -250,6 +250,9 @@ pnpm start
 ### 主界面
 ![主界面](https://raw.githubusercontent.com/yuhuotech/yh-image/main/uploads/202511/1764143576089-Paste_20251126_155256.png)
 
+### 上传界面
+![上传界面](https://raw.githubusercontent.com/yuhuotech/yh-image/main/uploads/202511/1764143641024-Paste_20251126_155400.png)
+
 ---
 
 ## 🤝 贡献指南

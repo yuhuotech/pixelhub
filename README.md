@@ -131,70 +131,21 @@ DATABASE_URL="postgresql://user:password@localhost:5432/pixelhub"
 
 ### 存储后端配置
 
-<details>
-<summary><b>腾讯云 COS</b></summary>
+**存储后端配置现在可以直接在应用的系统设置界面进行配置，无需修改代码或重启应用。**
 
-```env
-STORAGE_TYPE=cos
-COS_SECRET_ID=your_secret_id
-COS_SECRET_KEY=your_secret_key
-COS_BUCKET=your-bucket-name
-COS_REGION=ap-guangzhou
-```
+打开应用后，点击右上角的 ⚙️ 设置按钮，即可进入系统设置界面，配置以下存储后端：
 
-</details>
+#### 支持的存储后端及配置项
 
-<details>
-<summary><b>阿里云 OSS</b></summary>
+| 存储类型 | 必要配置项 |
+|---------|----------|
+| **腾讯云 COS** | Secret ID, Secret Key, Bucket, Region |
+| **阿里云 OSS** | Access Key ID, Access Key Secret, Bucket, Region, Endpoint |
+| **GitHub** | Access Token, 用户名, 仓库名, 分支 |
+| **Gitee** | Access Token, 用户名, 仓库名, 分支 |
+| **本地存储** | 存储路径（可选） |
 
-```env
-STORAGE_TYPE=oss
-OSS_ACCESS_KEY_ID=your_access_key_id
-OSS_ACCESS_KEY_SECRET=your_access_key_secret
-OSS_BUCKET=your-bucket-name
-OSS_REGION=oss-cn-hangzhou
-OSS_ENDPOINT=oss-cn-hangzhou.aliyuncs.com
-```
-
-</details>
-
-<details>
-<summary><b>GitHub</b></summary>
-
-```env
-STORAGE_TYPE=github
-GITHUB_ACCESS_TOKEN=ghp_your_token
-GITHUB_OWNER=your_username
-GITHUB_REPO=your_repo_name
-GITHUB_BRANCH=main
-```
-
-需要创建一个 Personal Access Token，权限需要包含 `repo`。
-
-</details>
-
-<details>
-<summary><b>Gitee</b></summary>
-
-```env
-STORAGE_TYPE=gitee
-GITEE_ACCESS_TOKEN=your_token
-GITEE_OWNER=your_username
-GITEE_REPO=your_repo_name
-GITEE_BRANCH=master
-```
-
-</details>
-
-<details>
-<summary><b>本地存储</b></summary>
-
-```env
-STORAGE_TYPE=local
-LOCAL_STORAGE_PATH=./uploads
-```
-
-</details>
+![系统设置界面](https://raw.githubusercontent.com/yuhuotech/yh-image/main/uploads/202511/1764144388180-Paste_20251126_160628.png)
 
 ---
 

@@ -88,45 +88,15 @@ pnpm install
 npm install
 ```
 
-3. **配置数据库**
+3. **配置环境变量**
 
-复制 `.env.example` 为 `.env` 并配置数据库连接：
+复制 `.env.example` 为 `.env`：
 
 ```bash
 cp .env.example .env
 ```
 
-**本地开发数据库选择：**
-
-**推荐方案：Supabase 免费 PostgreSQL**
-```bash
-# 1. 访问 https://supabase.com 注册免费账户
-# 2. 创建 PostgreSQL 项目，复制连接字符串
-# 3. 在 .env 中配置：
-DATABASE_PROVIDER="postgresql"
-DATABASE_URL="postgresql://postgres:password@host:5432/postgres?schema=public"
-```
-
-**备选方案 1：Docker PostgreSQL（本地隔离）**
-```bash
-# 启动 PostgreSQL 容器
-docker-compose up -d
-
-# 在 .env 中配置：
-DATABASE_PROVIDER="postgresql"
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/pixelhub"
-```
-
-**备选方案 2：SQLite（轻量级本地开发）**
-```bash
-# 在 .env 中配置：
-DATABASE_PROVIDER="sqlite"
-DATABASE_URL="file:./dev.db"
-```
-
-**备选方案 3：本地 PostgreSQL 服务**
-- 安装并运行本地 PostgreSQL 服务
-- 创建数据库并在 `.env` 中填入连接字符串
+默认使用 SQLite 数据库，无需额外配置，开箱即用。
 
 4. **初始化数据库**
 
@@ -183,112 +153,57 @@ DATABASE_URL="postgresql://user:password@localhost:5432/pixelhub"
 
 ## 📦 部署指南
 
-### Vercel 部署（推荐）
+### Docker 部署（推荐）
 
-**步骤 1: 创建 Vercel Postgres 数据库**
-
-1. Fork 本项目到你的 GitHub
-2. 在 [Vercel](https://vercel.com) 导入项目
-3. 在项目 Storage 标签页创建 Postgres 数据库
-4. Vercel 自动添加 `DATABASE_URL` 环境变量
-5. 部署完成
-
-Vercel Postgres 提供免费方案，自动配置连接字符串，无需手动设置。
-
-**选项: 使用 Supabase（免费方案）**
-
-如果不想使用 Vercel Postgres，也可以选择 Supabase：
-
-1. 在 [Supabase](https://supabase.com) 创建免费 PostgreSQL 数据库
-2. 复制连接字符串
-3. 在 Vercel 项目设置中添加环境变量 `DATABASE_URL`
-
-### Docker 部署
-
-**本地使用 SQLite**
+使用 Docker Compose 一键启动（包含应用和所有配置）：
 
 ```bash
-# 构建镜像
-docker build -t pixelhub .
-
-# 运行容器（使用 SQLite）
-docker run -d \
-  -p 3003:3003 \
-  -e DATABASE_URL="file:./dev.db" \
-  -e STORAGE_TYPE="local" \
-  --name pixelhub \
-  pixelhub
-```
-
-**连接外部 PostgreSQL**
-
-```bash
-# 运行容器（连接 PostgreSQL）
-docker run -d \
-  -p 3003:3003 \
-  -e DATABASE_URL="postgresql://user:password@host:5432/pixelhub" \
-  -e STORAGE_TYPE="local" \
-  --name pixelhub \
-  pixelhub
-```
-
-**使用 Docker Compose**
-
-```bash
-# 查看 docker-compose.yml 配置数据库和应用
 docker-compose up -d
 ```
 
+项目已包含 `docker-compose.yml`，默认配置：
+- 应用端口：3003
+- 数据库：SQLite（./dev.db）
+- 存储类型：本地存储
+
 ### 传统部署
 
-**本地或服务器上运行**
+在服务器或本地运行：
 
 ```bash
+# 安装依赖
+npm install
+
+# 初始化数据库
+npx prisma db push
+
 # 构建生产版本
-pnpm build
+npm run build
 
-# 启动生产服务器（本地 SQLite）
-pnpm start
-
-# 或使用 PostgreSQL（生产推荐）
-# DATABASE_URL="postgresql://..." pnpm start
+# 启动生产服务器
+npm start
 ```
 
-### 数据库选择指南
+应用会在 `http://localhost:3003` 启动。
 
-项目支持 **PostgreSQL** 和 **SQLite** 两种数据库：
+### Vercel 部署
 
-| 部署方式 | 推荐数据库 | 说明 |
-|---------|----------|------|
-| **本地开发** | PostgreSQL (Supabase) | 云端免费方案，与生产一致，推荐 |
-| **本地开发** | SQLite | 轻量级，完全本地存储，快速上手 |
-| **本地开发** | PostgreSQL (Docker) | 本地容器化，隔离环境 |
-| **Docker 部署** | PostgreSQL | 性能稳定，适合生产 |
-| **Vercel 部署** | Vercel Postgres | 官方集成，自动配置，推荐 |
-| **其他云平台** | PostgreSQL | Railway、Supabase、阿里云等 |
+**注意：** Vercel 不支持 SQLite（文件系统只读），需要切换到 PostgreSQL 数据库。
 
-**快速配置对比：**
+详细部署步骤请查看 [Vercel 部署指南](./VERCEL_DEPLOYMENT.md)
 
-```bash
-# PostgreSQL (Supabase) - 推荐给生产部署的开发者
-DATABASE_PROVIDER="postgresql"
-DATABASE_URL="postgresql://..."
+步骤概览：
+1. 创建 PostgreSQL 数据库（Vercel Postgres 或 Supabase）
+2. 修改 `prisma/schema.prisma` 中 provider 为 `"postgresql"`
+3. Fork 项目到 GitHub
+4. 在 Vercel 中导入并部署
 
-# SQLite - 推荐给只做本地开发的开发者
-DATABASE_PROVIDER="sqlite"
-DATABASE_URL="file:./dev.db"
+### 数据库说明
 
-# PostgreSQL (Docker) - 推荐想隔离环境的开发者
-# docker-compose up -d
-DATABASE_PROVIDER="postgresql"
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/pixelhub"
-```
-
-**重要提示：**
-- ✅ 通过 `DATABASE_PROVIDER` 和 `DATABASE_URL` 灵活切换
-- ✅ SQLite 和 PostgreSQL 无需修改代码
-- ✅ Vercel 部署自动使用 Vercel Postgres
-- ⚠️ SQLite 不支持 Vercel 部署（文件系统只读）
+项目**默认使用 SQLite**：
+- ✅ 本地开发：开箱即用，无需配置
+- ✅ Docker 部署：完全自包含
+- ⚠️ Vercel：需改为 PostgreSQL（见上面的部署指南）
 
 ---
 

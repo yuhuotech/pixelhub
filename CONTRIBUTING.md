@@ -80,37 +80,14 @@
 
 ### 数据库配置
 
-本地开发可选择 PostgreSQL 或 SQLite，选择一种即可：
-
-**方案 1：Supabase 免费 PostgreSQL（推荐）**
-
-1. 访问 [Supabase](https://supabase.com) 注册免费账户
-2. 创建 PostgreSQL 项目
-3. 复制连接字符串到 `.env`：
-```bash
-DATABASE_PROVIDER="postgresql"
-DATABASE_URL="postgresql://postgres:password@host:5432/postgres?schema=public"
-```
-
-**方案 2：SQLite（轻量级，快速上手）**
+本地开发默认使用 SQLite，无需额外配置：
 
 ```bash
-DATABASE_PROVIDER="sqlite"
+# .env 文件（开发环境）
 DATABASE_URL="file:./dev.db"
 ```
 
-**方案 3：Docker PostgreSQL（本地隔离环境）**
-
-1. 启动 PostgreSQL 容器：
-```bash
-docker-compose up -d
-```
-
-2. 配置 `.env`：
-```bash
-DATABASE_PROVIDER="postgresql"
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/pixelhub"
-```
+数据库会在首次启动时自动创建。
 
 **初始化数据库：**
 
@@ -126,7 +103,9 @@ npx prisma db push --force-reset  # 警告：会删除所有数据并重新创�
 npx prisma db seed                 # 重新创建默认用户
 ```
 
-**注意：** 如果使用 SQLite 开发，部署到 Vercel 时需改为 PostgreSQL（Vercel 不支持 SQLite）
+**若要部署到 Vercel：**
+
+需要改用 PostgreSQL 数据库。详见 [Vercel 部署指南](./VERCEL_DEPLOYMENT.md)
 
 ### 代码风格
 

@@ -1,6 +1,21 @@
 # Vercel 部署指南
 
-本项目默认使用 SQLite 数据库，适合本地开发和 Docker 部署。若要部署到 Vercel，需要切换到 PostgreSQL 数据库（因为 Vercel 的文件系统为只读，不支持 SQLite）。
+本项目使用**分支策略**来管理不同部署环境：
+
+- **main 分支**：SQLite（本地开发和 Docker 部署）
+- **vercel 分支**：PostgreSQL（Vercel 部署）
+
+## 快速开始（推荐）
+
+如果你只是想快速部署到 Vercel，**最简单的方式**：
+
+1. Fork 本项目
+2. 在 Vercel 中选择部署 **`vercel` 分支**（不是 main）
+3. 创建 PostgreSQL 数据库（Vercel Postgres、Supabase 或其他）
+4. 设置 `DATABASE_URL` 环境变量
+5. 部署完成！
+
+**就这么简单！** 数据库配置已经在 vercel 分支中配好了，无需手动修改。
 
 ## 为什么需要 PostgreSQL？
 

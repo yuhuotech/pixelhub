@@ -188,22 +188,29 @@ npm start
 
 ### Vercel 部署
 
-**注意：** Vercel 不支持 SQLite（文件系统只读），需要切换到 PostgreSQL 数据库。
+项目提供了专用的 **`vercel` 分支**，已预配置 PostgreSQL，部署超简单：
 
-详细部署步骤请查看 [Vercel 部署指南](./VERCEL_DEPLOYMENT.md)
+1. Fork 本项目到 GitHub
+2. 在 Vercel 中导入项目，**选择 `vercel` 分支**
+3. 创建 PostgreSQL 数据库（Vercel Postgres、Supabase 等）
+4. 设置 `DATABASE_URL` 环境变量
+5. 部署完成！
 
-步骤概览：
-1. 创建 PostgreSQL 数据库（Vercel Postgres 或 Supabase）
-2. 修改 `prisma/schema.prisma` 中 provider 为 `"postgresql"`
-3. Fork 项目到 GitHub
-4. 在 Vercel 中导入并部署
+无需修改任何代码，数据库已配置好。
+
+详细步骤和常见问题请查看 [Vercel 部署指南](./VERCEL_DEPLOYMENT.md)
 
 ### 数据库说明
 
-项目**默认使用 SQLite**：
-- ✅ 本地开发：开箱即用，无需配置
-- ✅ Docker 部署：完全自包含
-- ⚠️ Vercel：需改为 PostgreSQL（见上面的部署指南）
+项目使用**分支策略**管理数据库配置：
+
+| 分支 | 用途 | 数据库 |
+|-----|------|--------|
+| **main** | 本地开发、Docker 部署 | SQLite |
+| **vercel** | Vercel 部署 | PostgreSQL |
+
+- **main 分支**：开箱即用，无需配置，完美用于本地和 Docker
+- **vercel 分支**：预配置 PostgreSQL，直接用于 Vercel 部署
 
 ---
 

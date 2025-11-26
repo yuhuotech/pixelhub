@@ -88,13 +88,30 @@ pnpm install
 npm install
 ```
 
-3. **配置环境变量**
+3. **配置数据库**
 
-复制 `.env.example` 为 `.env` 并填写配置：
+复制 `.env.example` 为 `.env` 并配置数据库连接：
 
 ```bash
 cp .env.example .env
 ```
+
+**本地开发数据库选择（三选一）：**
+
+**选项 A：使用 Supabase 免费 PostgreSQL（推荐）**
+- 访问 [Supabase](https://supabase.com) 注册免费账户
+- 创建 PostgreSQL 项目，复制连接字符串到 `.env` 的 `DATABASE_URL`
+
+**选项 B：使用 Docker PostgreSQL（本地）**
+- 项目已包含 `docker-compose.yml`，运行：
+```bash
+docker-compose up -d
+# DATABASE_URL 使用：postgresql://postgres:postgres@localhost:5432/pixelhub
+```
+
+**选项 C：使用本地 PostgreSQL 服务**
+- 安装并运行 PostgreSQL
+- 创建数据库并填入连接字符串
 
 4. **初始化数据库**
 
@@ -224,18 +241,33 @@ pnpm start
 
 ### 数据库选择指南
 
-| 部署方式 | 推荐数据库 | 说明 |
+项目统一使用 **PostgreSQL**，支持多种部署方式：
+
+| 部署方式 | 数据库方案 | 说明 |
 |---------|----------|------|
-| **本地开发** | SQLite | 开箱即用，无需配置 |
-| **Docker 本地** | SQLite | 简单快速，适合演示 |
-| **Docker 生产** | PostgreSQL | 性能和稳定性更好 |
+| **本地开发** | Supabase 免费版 | 云端 PostgreSQL，无需本地配置 |
+| **本地开发** | Docker PostgreSQL | 本地容器化，运行 `docker-compose up -d` |
+| **Docker 部署** | PostgreSQL 容器 | docker-compose.yml 已配置 |
 | **Vercel 部署** | Vercel Postgres | 官方支持，自动配置，推荐 |
-| **其他云平台** | PostgreSQL | Supabase、Railway、阿里云等 |
+| **其他云平台** | PostgreSQL | Railway、Supabase、阿里云等 |
+
+**快速开始对比：**
+
+```bash
+# Supabase（推荐给开发者）
+# 1. 访问 https://supabase.com
+# 2. 创建项目，复制连接字符串
+# 3. 粘贴到 .env 中，运行 npm run dev
+
+# Docker（推荐给想隔离环境的开发者）
+docker-compose up -d  # 启动 PostgreSQL
+npm run dev          # 启动应用
+```
 
 **重要提示：**
-- Vercel 文件系统为只读，**不支持 SQLite**，必须使用 PostgreSQL
-- 本地 SQLite 数据库文件位置：`./dev.db`（git 已忽略）
-- Prisma 自动支持 SQLite 和 PostgreSQL，无需修改代码
+- ✅ PostgreSQL 统一支持所有部署环境
+- ✅ 本地、Docker、Vercel 数据库配置相同（只改 DATABASE_URL）
+- ✅ 无需修改代码，自动适配
 
 ---
 

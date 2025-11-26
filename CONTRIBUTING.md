@@ -80,20 +80,41 @@
 
 ### 数据库配置
 
-本地开发使用 SQLite，无需额外配置：
+本地开发使用 PostgreSQL，有两种选择：
 
+**方案 1：Supabase 免费 PostgreSQL（推荐 - 无需本地配置）**
+
+1. 访问 [Supabase](https://supabase.com) 注册免费账户
+2. 创建 PostgreSQL 项目
+3. 复制连接字符串到 `.env`：
 ```bash
-# .env 文件（开发环境）
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://postgres:password@host:5432/postgres?schema=public"
 ```
 
-数据库会在首次启动时自动创建。如需重置数据库：
+**方案 2：Docker PostgreSQL（本地隔离环境）**
+
+1. 启动 PostgreSQL 容器：
+```bash
+docker-compose up -d
+```
+
+2. 配置 `.env`：
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/pixelhub"
+```
+
+**初始化数据库：**
 
 ```bash
-# 重置数据库（删除所有数据）
-rm dev.db
-npx prisma db push  # 重新创建表结构
-npx prisma db seed  # 创建默认管理员用户
+npx prisma db push      # 创建表结构
+npx prisma db seed      # 创建默认管理员用户（admin/admin）
+```
+
+**重置数据库（删除所有数据）：**
+
+```bash
+npx prisma db push --force-reset  # 警告：会删除所有数据并重新创建表
+npx prisma db seed                 # 重新创建默认用户
 ```
 
 ### 代码风格

@@ -6,6 +6,18 @@ import { getAllSettings } from '@/lib/settings'
 
 export async function POST(request: Request) {
     try {
+        // Check if running on Vercel (serverless environment)
+        if (process.env.VERCEL) {
+            return NextResponse.json(
+                {
+                    error: 'Local storage is not available on Vercel',
+                    message: 'Vercel is a serverless platform without persistent file storage. Please configure one of the following storage backends: COS, OSS, GitHub, or Gitee.',
+                    learnMore: 'https://vercel.com/docs/functions/serverless-functions#storage'
+                },
+                { status: 400 }
+            )
+        }
+
         const formData = await request.formData()
         const file = formData.get('file') as File
 

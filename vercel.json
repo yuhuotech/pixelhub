@@ -3,10 +3,5 @@
   "installCommand": "pnpm install",
   "regions": [
     "icn1"
-  ],
-  "env": {
-    "ADMIN_USERNAME": "@ADMIN_USERNAME",
-    "ADMIN_PASSWORD": "@ADMIN_PASSWORD",
-    "SESSION_SECRET": "@SESSION_SECRET"
-  }
+  ]
 }

@@ -1,0 +1,16 @@
+{
+  "buildCommand": "npm run build:vercel",
+  "installCommand": "pnpm install",
+  "nodeVersion": "18.17.0",
+  "env": {
+    "ADMIN_USERNAME": "@ADMIN_USERNAME",
+    "ADMIN_PASSWORD": "@ADMIN_PASSWORD",
+    "SESSION_SECRET": "@SESSION_SECRET"
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "vercel": true
+    }
+  }
+}

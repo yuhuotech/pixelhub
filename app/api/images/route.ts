@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAllSettings } from '@/lib/settings'
 
-async function buildOriginUrl(image: any): Promise<string> {
-    const settings = await getAllSettings()
+// Build origin URL for a single image given pre-fetched settings
+// This avoids N+1 queries by passing settings instead of fetching per-image
+function buildOriginUrl(image: any, settings: any): string {
     const storageType = image.storageType || settings.storageType
 
     switch (storageType) {
@@ -108,13 +109,14 @@ export async function GET(request: Request) {
         const data = hasNextPage ? images.slice(0, limit) : images
         const nextCursor = hasNextPage ? data[data.length - 1].id : null
 
-        // Build originUrl for each image
-        const imagesWithOriginUrl = await Promise.all(
-            data.map(async (image) => ({
-                ...image,
-                originUrl: await buildOriginUrl(image)
-            }))
-        )
+        // Fetch settings only once (not per-image) to avoid N+1 queries
+        const settings = await getAllSettings()
+
+        // Build originUrl for each image using the same settings object
+        const imagesWithOriginUrl = data.map((image) => ({
+            ...image,
+            originUrl: buildOriginUrl(image, settings)
+        }))
 
         return NextResponse.json({
             images: imagesWithOriginUrl,

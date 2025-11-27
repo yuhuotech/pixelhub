@@ -35,21 +35,51 @@ export async function POST(request: Request) {
         const buffer = Buffer.from(await file.arrayBuffer())
         const content = buffer.toString('base64')
 
-        // Call Gitee API
+        // Call Gitee API with timeout and retry
         const giteeUrl = `https://gitee.com/api/v5/repos/${owner}/${repo}/contents/${path}`
 
-        const response = await fetch(giteeUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=UTF-8'
-            },
-            body: JSON.stringify({
-                access_token: token,
-                content: content,
-                message: `Upload ${file.name} via PixelHub`,
-                branch: branch
-            })
-        })
+        let response
+        let lastError: Error | null = null
+        const maxRetries = 2
+        const timeoutMs = 60000 // 60 seconds timeout per attempt
+
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                response = await Promise.race([
+                    fetch(giteeUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json;charset=UTF-8'
+                        },
+                        body: JSON.stringify({
+                            access_token: token,
+                            content: content,
+                            message: `Upload ${file.name} via PixelHub`,
+                            branch: branch
+                        })
+                    }),
+                    new Promise<Response>((_, reject) =>
+                        setTimeout(() => reject(new Error('Upload timeout')), timeoutMs)
+                    )
+                ])
+                break // Success, exit retry loop
+            } catch (error) {
+                lastError = error as Error
+                if (attempt < maxRetries) {
+                    console.warn(`[Gitee Upload] Attempt ${attempt + 1} failed, retrying... Error: ${lastError.message}`)
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, 1000))
+                }
+            }
+        }
+
+        if (!response) {
+            console.error('[Gitee Upload] All upload attempts failed:', lastError?.message)
+            return NextResponse.json(
+                { error: 'Failed to upload to Gitee after retries', details: lastError?.message },
+                { status: 500 }
+            )
+        }
 
         if (!response.ok) {
             const errorData = await response.json()
@@ -59,11 +89,10 @@ export async function POST(request: Request) {
 
         const data = await response.json()
 
-        // Construct raw URL for reference, but return proxy URL for frontend consistency
-        const rawGiteeUrl = `https://gitee.com/${owner}/${repo}/raw/${branch}/${path}`
-
-        // Use local proxy URL: /file/uploads/YYYYMM/timestamp-filename
-        const proxyUrl = `${new URL(request.url).origin}/file/${path}`
+        // Use local proxy URL with proper origin detection (supports reverse proxy)
+        const protocol = request.headers.get('x-forwarded-proto') || new URL(request.url).protocol.replace(':', '')
+        const host = request.headers.get('x-forwarded-host') || request.headers.get('host')
+        const proxyUrl = `${protocol}://${host}/file/${path}`
 
         return NextResponse.json({
             url: proxyUrl, // Return proxy URL so frontend treats it like COS

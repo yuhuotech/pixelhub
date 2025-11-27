@@ -39,19 +39,50 @@ export async function POST(request: Request) {
         // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#create-or-update-file-contents
         const githubUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`
 
-        const response = await fetch(githubUrl, {
-            method: 'PUT', // GitHub uses PUT for creating files
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'User-Agent': 'PixelHub'
-            },
-            body: JSON.stringify({
-                message: `Upload ${file.name} via PixelHub`,
-                content: content,
-                branch: branch
-            })
-        })
+        // Add timeout and retry for GitHub uploads
+        let response
+        let lastError: Error | null = null
+        const maxRetries = 2
+        const timeoutMs = 60000 // 60 seconds timeout per attempt
+
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                response = await Promise.race([
+                    fetch(githubUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                            'User-Agent': 'PixelHub'
+                        },
+                        body: JSON.stringify({
+                            message: `Upload ${file.name} via PixelHub`,
+                            content: content,
+                            branch: branch
+                        })
+                    }),
+                    new Promise<Response>((_, reject) =>
+                        setTimeout(() => reject(new Error('Upload timeout')), timeoutMs)
+                    )
+                ])
+                break // Success, exit retry loop
+            } catch (error) {
+                lastError = error as Error
+                if (attempt < maxRetries) {
+                    console.warn(`[GitHub Upload] Attempt ${attempt + 1} failed, retrying... Error: ${lastError.message}`)
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, 1000))
+                }
+            }
+        }
+
+        if (!response) {
+            console.error('[GitHub Upload] All upload attempts failed:', lastError?.message)
+            return NextResponse.json(
+                { error: 'Failed to upload to GitHub after retries', details: lastError?.message },
+                { status: 500 }
+            )
+        }
 
         const data = await response.json()
 
@@ -60,8 +91,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Failed to upload to GitHub', details: data }, { status: response.status })
         }
 
-        // Use local proxy URL: /file/uploads/YYYYMM/timestamp-filename
-        const proxyUrl = `${new URL(request.url).origin}/file/${path}`
+        // Use local proxy URL with proper origin detection (supports reverse proxy)
+        const protocol = request.headers.get('x-forwarded-proto') || new URL(request.url).protocol.replace(':', '')
+        const host = request.headers.get('x-forwarded-host') || request.headers.get('host')
+        const proxyUrl = `${protocol}://${host}/file/${path}`
 
         return NextResponse.json({
             url: proxyUrl, // Return proxy URL so frontend treats it like COS

@@ -57,8 +57,9 @@ export async function GET(
             const owner = settings.githubOwner
             const repo = settings.githubRepo
             const branch = settings.githubBranch || 'main'
-            // GitHub raw URL: https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}
-            fetchUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${objectKey}`
+            // Use GitHub API for better reliability with large files
+            // This is more reliable than raw.githubusercontent.com CDN for large files
+            fetchUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${objectKey}?ref=${branch}`
         } else if (storageType === 'oss') {
             const bucket = settings.ossBucket
             const endpoint = settings.ossEndpoint
@@ -119,8 +120,25 @@ export async function GET(
             })
         }
 
-        // 2. Fetch from Source (COS or Gitee)
-        const response = await fetch(fetchUrl)
+        // 2. Fetch from Source (COS, GitHub, Gitee, OSS)
+        let fetchOptions: RequestInit = {
+            // Increase timeout for large file downloads
+            signal: AbortSignal.timeout(120000) // 120 seconds = 2 minutes for large files
+        }
+
+        // For GitHub API, add authentication and raw content header
+        if (storageType === 'github') {
+            const token = settings.githubAccessToken
+            if (token) {
+                fetchOptions.headers = {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/vnd.github.v3.raw',
+                    'User-Agent': 'PixelHub'
+                }
+            }
+        }
+
+        const response = await fetch(fetchUrl, fetchOptions)
 
         if (!response.ok) {
             console.error(`Failed to fetch from ${storageType}: ${response.status} ${response.statusText}`)

@@ -106,17 +106,11 @@ if [ -d .git ]; then
     CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     log_info "Current branch: $CURRENT_BRANCH"
 
-    # Check for uncommitted changes
+    # Check for uncommitted changes and stash them
     if ! git diff-index --quiet HEAD --; then
-        log_warning "You have uncommitted changes:"
-        git status --short
-        echo
-        read -p "Continue anyway? (y/n) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            log_info "Cancelled"
-            exit 0
-        fi
+        log_warning "Found uncommitted changes, stashing them..."
+        git stash
+        log_info "Changes stashed"
     fi
 
     # Pull latest changes

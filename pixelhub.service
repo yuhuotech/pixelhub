@@ -1,0 +1,25 @@
+[Unit]
+Description=PixelHub Image Hosting Service
+After=network.target
+
+[Service]
+Type=simple
+User=hmw
+WorkingDirectory=/opt/pixelhub
+ExecStart=/opt/pixelhub/start.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pixelhub
+
+# Resource limits (optional)
+LimitNOFILE=65535
+LimitNPROC=4096
+
+# Security settings (optional)
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

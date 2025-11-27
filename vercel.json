@@ -2,6 +2,9 @@
   "buildCommand": "npm run build:vercel",
   "installCommand": "pnpm install",
   "nodeVersion": "18.17.0",
+  "regions": [
+    "icn1"
+  ],
   "env": {
     "ADMIN_USERNAME": "@ADMIN_USERNAME",
     "ADMIN_PASSWORD": "@ADMIN_PASSWORD",

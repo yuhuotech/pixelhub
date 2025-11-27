@@ -4,7 +4,7 @@
   "private": false,
   "scripts": {
     "dev": "node scripts/kill-port.js && next dev -p 3003",
-    "build": "prisma generate && npx prisma migrate deploy && next build",
+    "build": "prisma generate && npx prisma migrate deploy && npx prisma db seed && next build",
     "start": "next start -p 3003",
     "lint": "eslint"
   },

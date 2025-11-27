@@ -254,18 +254,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unknown storage type' }, { status: 500 })
         }
 
-        // Get image dimensions
-        let width, height
-        if (contentType.startsWith('image/')) {
-            try {
-                const sharp = await import('sharp')
-                const metadata = await sharp.default(buffer).metadata()
-                width = metadata.width
-                height = metadata.height
-            } catch {
-                // If sharp is not available, skip dimensions
-            }
-        }
+        // Image dimensions are optional and not provided for URL imports
+        const width = undefined
+        const height = undefined
 
         // Save to database
         const { prisma } = await import('@/lib/prisma')

@@ -142,6 +142,13 @@ const commands = [
     args: ['prisma', 'generate'],
   },
   {
+    name: 'Resolve Failed Migrations (if any)',
+    cmd: 'npx',
+    args: ['prisma', 'migrate', 'resolve', '--rolled-back', '20251127000000_add_missing_fields'],
+    description: 'Cleaning up old failed migrations from previous deployments',
+    optional: true,  // Don't fail if this migration doesn't exist
+  },
+  {
     name: 'Apply Database Migrations',
     cmd: 'npx',
     args: ['prisma', 'migrate', 'deploy'],
@@ -166,6 +173,7 @@ const commands = [
 
 /**
  * Execute a single command with proper error handling
+ * Supports optional commands that don't fail the build if they fail
  */
 function executeCommand(command) {
   return new Promise((resolve, reject) => {
@@ -187,12 +195,24 @@ function executeCommand(command) {
         console.log(`✅ ${command.name} completed successfully\n`);
         resolve();
       } else {
-        reject(new Error(`❌ ${command.name} failed with exit code ${code}`));
+        // For optional commands, log warning but continue
+        if (command.optional) {
+          console.log(`⚠️  ${command.name} failed with exit code ${code}, but continuing (optional)\n`);
+          resolve();
+        } else {
+          reject(new Error(`❌ ${command.name} failed with exit code ${code}`));
+        }
       }
     });
 
     child.on('error', (err) => {
-      reject(err);
+      // For optional commands, log warning but continue
+      if (command.optional) {
+        console.log(`⚠️  ${command.name} encountered error, but continuing (optional): ${err.message}\n`);
+        resolve();
+      } else {
+        reject(err);
+      }
     });
   });
 }

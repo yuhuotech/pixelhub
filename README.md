@@ -11,7 +11,7 @@
 
 [English](./README_EN.md) | 简体中文
 
-[在线演示](#) · [快速开始](#快速开始) · [功能特性](#功能特性) · [部署指南](#部署指南)
+[在线演示](https://pixelhub-demo.vercel.app/) · [快速开始](#快速开始) · [功能特性](#功能特性) · [部署指南](#部署指南)
 
 </div>
 
@@ -60,6 +60,16 @@ PixelHub 是一个功能强大、界面优雅的开源图床系统，支持多�
 - **🗑️ 回收站** - 软删除，支持恢复
 - **🖼️ Lightbox 预览** - 优雅的图片查看器
 - **📋 一键复制** - 支持 URL、Markdown、HTML 格式
+
+---
+
+## 🌐 在线演示
+
+📌 **立即体验**: [https://pixelhub-demo.vercel.app/](https://pixelhub-demo.vercel.app/)
+
+**测试账号**：
+- 用户名: `admin`
+- 密码: `admin`
 
 ---
 

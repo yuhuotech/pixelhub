@@ -90,15 +90,7 @@ git clone https://github.com/yuhuotech/pixelhub.git
 cd pixelhub
 ```
 
-2. **安装依赖**
-
-```bash
-pnpm install
-# 或
-npm install
-```
-
-3. **配置环境变量**
+2. **配置环境变量**
 
 复制 `.env.example` 为 `.env`：
 
@@ -108,21 +100,37 @@ cp .env.example .env
 
 默认使用 SQLite 数据库，无需额外配置，开箱即用。
 
-4. **初始化数据库**
+3. **启动应用（推荐使用启动脚本）**
 
 ```bash
-npx prisma db push
+# 一次性命令，自动处理依赖安装、数据库初始化、构建和启动
+./start.sh
+
+# 开发模式
+./start.sh --dev
+
+# 强制重新安装（遇到问题）
+./start.sh --fresh
 ```
 
-5. **启动开发服务器**
-
-```bash
-pnpm dev
-# 或
-npm run dev
-```
+启动脚本会自动：
+- 安装依赖
+- 初始化数据库
+- 构建应用
+- 启动服务
 
 访问 `http://localhost:3003` 即可使用。
+
+**手动方式（如果不使用脚本）：**
+
+```bash
+npm install
+npx prisma db push
+npm run build
+npm run dev    # 开发模式
+# 或
+npm start      # 生产模式
+```
 
 ---
 
@@ -180,47 +188,99 @@ docker-compose up -d
 
 在服务器或本地运行：
 
+#### 使用启动脚本（推荐）
+
 ```bash
-# 安装依赖
-npm install
+# 第一次启动（自动安装依赖、初始化数据库、构建和启动）
+./start.sh
 
-# 初始化数据库
-npx prisma db push
+# 后续更新（自动 git pull、条件性重建、启动）
+./start.sh
 
-# 构建生产版本
-npm run build
-
-# 启动生产服务器
-npm start
+# 生产模式（默认）会在 http://localhost:3003 启动
 ```
 
-应用会在 `http://localhost:3003` 启动。
+启动脚本会自动判断是否需要重新安装依赖和构建，减少不必要的操作时间。
+
+#### 使用 systemctl 管理（服务器部署推荐）
+
+在生产服务器上使用 systemctl 来管理服务：
+
+```bash
+# 1. 复制 service 文件到 systemd
+sudo cp pixelhub.service /etc/systemd/system/
+
+# 2. 重新加载配置
+sudo systemctl daemon-reload
+
+# 3. 启用自启动
+sudo systemctl enable pixelhub
+
+# 4. 启动服务
+sudo systemctl start pixelhub
+
+# 5. 查看状态
+sudo systemctl status pixelhub
+
+# 查看日志
+sudo journalctl -u pixelhub -f
+```
+
+#### 手动启动（不使用脚本）
+
+```bash
+npm install
+npx prisma db push
+npm run build
+npm start  # 启动生产服务器
+```
 
 ### Vercel 部署
 
-项目提供了专用的 **`vercel` 分支**，已预配置 PostgreSQL，部署超简单：
+**单一代码库，自动适配多个数据库环境！**
+
+项目使用动态数据库提供者替换技术，同一份代码既可用于本地 SQLite，也可用于 Vercel PostgreSQL，无需维护多个分支：
+
+#### 部署步骤
 
 1. Fork 本项目到 GitHub
-2. 在 Vercel 中导入项目，**选择 `vercel` 分支**
+2. 在 Vercel 中导入项目（main 分支）
 3. 创建 PostgreSQL 数据库（Vercel Postgres、Supabase 等）
-4. 设置 `DATABASE_URL` 环境变量
+4. 在 Vercel 项目设置中配置环境变量：
+   - `DATABASE_URL`: PostgreSQL 连接字符串
+   - `ADMIN_USERNAME`: 管理员用户名（可选）
+   - `ADMIN_PASSWORD`: 管理员密码（可选）
+   - `SESSION_SECRET`: 会话密钥（可选）
 5. 部署完成！
 
-无需修改任何代码，数据库已配置好。
+#### 工作原理
+
+Vercel 构建时，`scripts/build-vercel.js` 会：
+- 自动检测 Vercel 环境
+- 动态将 SQLite 替换为 PostgreSQL
+- 转换 SQL 语法以兼容 PostgreSQL（DATETIME → TIMESTAMP）
+- 构建完成后恢复原始 SQLite 配置
+
+这样做的好处：
+- ✅ 单一代码库，不需要多个分支
+- ✅ 本地开发、Docker、Vercel 都使用相同源代码
+- ✅ 降低维护成本和出错风险
 
 详细步骤和常见问题请查看 [Vercel 部署指南](./VERCEL_DEPLOYMENT.md)
 
 ### 数据库说明
 
-项目使用**分支策略**管理数据库配置：
+项目支持多数据库环境，自动切换：
 
-| 分支 | 用途 | 数据库 |
+| 环境 | 用途 | 数据库 |
 |-----|------|--------|
-| **main** | 本地开发、Docker 部署 | SQLite |
-| **vercel** | Vercel 部署 | PostgreSQL |
+| **本地开发** | `npm run dev` / `./start.sh --dev` | SQLite (./dev.db) |
+| **生产构建** | `npm run build` / `./start.sh` | SQLite (./dev.db) |
+| **Vercel 部署** | 自动检测，构建时动态替换 | PostgreSQL |
+| **Docker** | `docker-compose up` | SQLite (./dev.db) |
 
-- **main 分支**：开箱即用，无需配置，完美用于本地和 Docker
-- **vercel 分支**：预配置 PostgreSQL，直接用于 Vercel 部署
+- **本地/Docker**：开箱即用，SQLite 无需配置
+- **Vercel**：自动检测并使用 PostgreSQL，无需代码修改
 
 ---
 

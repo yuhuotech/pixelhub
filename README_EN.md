@@ -90,15 +90,7 @@ git clone https://github.com/yuhuotech/pixelhub.git
 cd pixelhub
 ```
 
-2. **Install Dependencies**
-
-```bash
-pnpm install
-# or
-npm install
-```
-
-3. **Configure Environment Variables**
+2. **Configure Environment Variables**
 
 Copy `.env.example` to `.env`:
 
@@ -108,21 +100,37 @@ cp .env.example .env
 
 By default, SQLite is used and requires no additional configuration - works out of the box.
 
-4. **Initialize Database**
+3. **Start Application (Recommended Using Startup Script)**
 
 ```bash
-npx prisma db push
+# One command that handles everything - dependencies, database, build, and startup
+./start.sh
+
+# Development mode
+./start.sh --dev
+
+# Force reinstall (if you encounter issues)
+./start.sh --fresh
 ```
 
-5. **Start Development Server**
-
-```bash
-pnpm dev
-# or
-npm run dev
-```
+The startup script automatically:
+- Installs dependencies
+- Initializes the database
+- Builds the application
+- Starts the service
 
 Access `http://localhost:3003` to use the application.
+
+**Manual method (if not using the script):**
+
+```bash
+npm install
+npx prisma db push
+npm run build
+npm run dev    # Development mode
+# or
+npm start      # Production mode
+```
 
 ---
 
@@ -180,47 +188,99 @@ The project includes `docker-compose.yml` with default configuration:
 
 Run on your server or locally:
 
+#### Using Startup Script (Recommended)
+
 ```bash
-# Install dependencies
-npm install
+# First startup (automatically installs dependencies, initializes database, builds and starts)
+./start.sh
 
-# Initialize database
-npx prisma db push
+# Subsequent updates (automatically git pull, conditionally rebuild, and start)
+./start.sh
 
-# Build production version
-npm run build
-
-# Start production server
-npm start
+# Production mode (default) starts at http://localhost:3003
 ```
 
-The application will start at `http://localhost:3003`.
+The startup script automatically determines whether to reinstall dependencies and rebuild, reducing unnecessary operation time.
+
+#### Managing with systemctl (Recommended for Server Deployment)
+
+Use systemctl to manage the service on production servers:
+
+```bash
+# 1. Copy service file to systemd
+sudo cp pixelhub.service /etc/systemd/system/
+
+# 2. Reload configuration
+sudo systemctl daemon-reload
+
+# 3. Enable auto-start
+sudo systemctl enable pixelhub
+
+# 4. Start service
+sudo systemctl start pixelhub
+
+# 5. Check status
+sudo systemctl status pixelhub
+
+# View logs
+sudo journalctl -u pixelhub -f
+```
+
+#### Manual Startup (Without Script)
+
+```bash
+npm install
+npx prisma db push
+npm run build
+npm start  # Start production server
+```
 
 ### Vercel Deployment
 
-The project includes a dedicated **`vercel` branch** with PostgreSQL pre-configured for easy deployment:
+**Single codebase that automatically adapts to multiple database environments!**
+
+The project uses dynamic database provider replacement technology, allowing the same code to work with both local SQLite and Vercel PostgreSQL without maintaining multiple branches:
+
+#### Deployment Steps
 
 1. Fork this project to GitHub
-2. Import the project in Vercel, **select the `vercel` branch**
+2. Import the project in Vercel (main branch)
 3. Create a PostgreSQL database (Vercel Postgres, Supabase, etc.)
-4. Set the `DATABASE_URL` environment variable
+4. Configure environment variables in Vercel project settings:
+   - `DATABASE_URL`: PostgreSQL connection string
+   - `ADMIN_USERNAME`: Admin username (optional)
+   - `ADMIN_PASSWORD`: Admin password (optional)
+   - `SESSION_SECRET`: Session secret (optional)
 5. Deployment complete!
 
-No code changes needed - the database is already configured.
+#### How It Works
+
+When building on Vercel, `scripts/build-vercel.js`:
+- Automatically detects the Vercel environment
+- Dynamically replaces SQLite with PostgreSQL
+- Converts SQL syntax for PostgreSQL compatibility (DATETIME → TIMESTAMP)
+- Restores the original SQLite configuration after building
+
+Benefits:
+- ✅ Single codebase, no need for multiple branches
+- ✅ Local development, Docker, and Vercel all use the same source code
+- ✅ Reduces maintenance cost and reduces error risk
 
 See [Vercel Deployment Guide](./VERCEL_DEPLOYMENT.md) for detailed steps and FAQs.
 
 ### Database Information
 
-The project uses **branch strategy** for database configuration:
+The project supports multiple database environments with automatic switching:
 
-| Branch | Purpose | Database |
+| Environment | Purpose | Database |
 |-----|------|--------|
-| **main** | Local development, Docker deployment | SQLite |
-| **vercel** | Vercel deployment | PostgreSQL |
+| **Local Development** | `npm run dev` / `./start.sh --dev` | SQLite (./dev.db) |
+| **Production Build** | `npm run build` / `./start.sh` | SQLite (./dev.db) |
+| **Vercel Deployment** | Auto-detected, dynamically replaced during build | PostgreSQL |
+| **Docker** | `docker-compose up` | SQLite (./dev.db) |
 
-- **main branch**: Works out of the box, no configuration needed, perfect for local and Docker deployment
-- **vercel branch**: PostgreSQL pre-configured for Vercel deployment
+- **Local/Docker**: Works out of the box, SQLite requires no configuration
+- **Vercel**: Auto-detects and uses PostgreSQL, no code changes needed
 
 ---
 

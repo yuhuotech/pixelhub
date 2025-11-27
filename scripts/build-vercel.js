@@ -168,18 +168,25 @@ const commands = [
     args: ['prisma', 'generate'],
   },
   {
-    name: 'Resolve Failed Migrations - Old (if any)',
+    name: 'Check Migration Status',
+    cmd: 'npx',
+    args: ['prisma', 'migrate', 'status'],
+    description: 'Analyzing current migration state...',
+    optional: true,
+  },
+  {
+    name: 'Resolve Old Failed Migrations',
     cmd: 'npx',
     args: ['prisma', 'migrate', 'resolve', '--rolled-back', '20251127000000_add_missing_fields'],
     description: 'Cleaning up old failed migrations from previous deployments',
     optional: true,  // Don't fail if this migration doesn't exist
   },
   {
-    name: 'Resolve Failed Migrations - Current (if any)',
+    name: 'Mark Init Migration as Applied',
     cmd: 'npx',
-    args: ['prisma', 'migrate', 'resolve', '--rolled-back', '20251127000000_init'],
-    description: 'Cleaning up current migration failures from this or previous deployments',
-    optional: true,  // Don't fail if this migration hasn't failed
+    args: ['prisma', 'migrate', 'resolve', '--applied', '20251127000000_init'],
+    description: 'Mark init migration as applied if tables were already created by previous failed deployment',
+    optional: true,  // This handles "relation ... already exists" scenario
   },
   {
     name: 'Apply Database Migrations',

@@ -168,11 +168,18 @@ const commands = [
     args: ['prisma', 'generate'],
   },
   {
-    name: 'Resolve Failed Migrations (if any)',
+    name: 'Resolve Failed Migrations - Old (if any)',
     cmd: 'npx',
     args: ['prisma', 'migrate', 'resolve', '--rolled-back', '20251127000000_add_missing_fields'],
     description: 'Cleaning up old failed migrations from previous deployments',
     optional: true,  // Don't fail if this migration doesn't exist
+  },
+  {
+    name: 'Resolve Failed Migrations - Current (if any)',
+    cmd: 'npx',
+    args: ['prisma', 'migrate', 'resolve', '--rolled-back', '20251127000000_init'],
+    description: 'Cleaning up current migration failures from this or previous deployments',
+    optional: true,  // Don't fail if this migration hasn't failed
   },
   {
     name: 'Apply Database Migrations',

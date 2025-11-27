@@ -38,8 +38,10 @@ export async function POST(request: Request) {
 
         console.log(`[Local Storage] File saved to ${filePath}`)
 
-        // Use local proxy URL
-        const proxyUrl = `${new URL(request.url).origin}/file/${relativePath}`
+        // Use local proxy URL with proper origin detection (supports reverse proxy)
+        const protocol = request.headers.get('x-forwarded-proto') || new URL(request.url).protocol.replace(':', '')
+        const host = request.headers.get('x-forwarded-host') || request.headers.get('host')
+        const proxyUrl = `${protocol}://${host}/file/${relativePath}`
 
         return NextResponse.json({
             url: proxyUrl,

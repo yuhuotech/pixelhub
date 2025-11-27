@@ -58,8 +58,11 @@ if (!process.env.DATABASE_URL) {
 const isVercel = !!process.env.VERCEL;
 const schemaPath = path.join(__dirname, '..', 'prisma', 'schema.prisma');
 const migrationLockPath = path.join(__dirname, '..', 'prisma', 'migrations', 'migration_lock.toml');
+const migrationsDir = path.join(__dirname, '..', 'prisma', 'migrations');
+
 let originalSchema = null;
 let originalMigrationLock = null;
+let originalMigrationSQLs = {}; // Store all migration SQL files
 
 /**
  * Store original files before any modifications
@@ -68,6 +71,16 @@ const storeOriginalFiles = () => {
   try {
     originalSchema = fs.readFileSync(schemaPath, 'utf-8');
     originalMigrationLock = fs.readFileSync(migrationLockPath, 'utf-8');
+
+    // Store all migration SQL files
+    const migrations = fs.readdirSync(migrationsDir);
+    for (const migration of migrations) {
+      if (migration.startsWith('.')) continue;
+      const sqlPath = path.join(migrationsDir, migration, 'migration.sql');
+      if (fs.existsSync(sqlPath)) {
+        originalMigrationSQLs[sqlPath] = fs.readFileSync(sqlPath, 'utf-8');
+      }
+    }
   } catch (err) {
     console.error('❌ Error reading original files:', err.message);
     process.exit(1);
@@ -77,7 +90,7 @@ const storeOriginalFiles = () => {
 /**
  * Replace SQLite provider with PostgreSQL for Vercel deployment
  * This allows single schema.prisma file to work in both environments
- * Also updates migration_lock.toml to match the provider switch
+ * Also updates migration_lock.toml and converts SQL syntax
  */
 const replaceProviderForVercel = () => {
   if (!isVercel) {
@@ -105,9 +118,18 @@ const replaceProviderForVercel = () => {
       'provider = "postgresql"'
     );
 
+    // Convert SQLite SQL syntax to PostgreSQL in migration files
+    // DATETIME -> TIMESTAMP (PostgreSQL doesn't support DATETIME)
+    for (const [sqlPath, originalSQL] of Object.entries(originalMigrationSQLs)) {
+      const modifiedSQL = originalSQL.replace(/DATETIME/g, 'TIMESTAMP');
+      if (modifiedSQL !== originalSQL) {
+        fs.writeFileSync(sqlPath, modifiedSQL, 'utf-8');
+      }
+    }
+
     fs.writeFileSync(schemaPath, modifiedSchema, 'utf-8');
     fs.writeFileSync(migrationLockPath, modifiedLock, 'utf-8');
-    console.log('✓ Prisma schema and migration lock provider updated to PostgreSQL\n');
+    console.log('✓ Prisma schema, migration lock, and migration SQL syntax updated to PostgreSQL\n');
   } catch (err) {
     console.error('❌ Error replacing provider:', err.message);
     process.exit(1);
@@ -125,7 +147,11 @@ const restoreOriginalFiles = () => {
     if (originalMigrationLock) {
       fs.writeFileSync(migrationLockPath, originalMigrationLock, 'utf-8');
     }
-    console.log('✓ Prisma schema and migration lock restored to original state\n');
+    // Restore all migration SQL files
+    for (const [sqlPath, originalSQL] of Object.entries(originalMigrationSQLs)) {
+      fs.writeFileSync(sqlPath, originalSQL, 'utf-8');
+    }
+    console.log('✓ Prisma schema, migration lock, and migration SQL restored to original state\n');
   } catch (err) {
     console.error('❌ Error restoring files:', err.message);
   }

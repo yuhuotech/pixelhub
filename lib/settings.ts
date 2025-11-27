@@ -69,7 +69,11 @@ export async function setSetting(key: string, value: string, category: string = 
  * Get all settings as a config object
  */
 export async function getAllSettings(): Promise<SettingsConfig> {
+    const beforeQuery = Date.now()
     const settings = await prisma.settings.findMany()
+    const afterQuery = Date.now()
+    console.log(`[Settings] prisma.settings.findMany() took ${afterQuery - beforeQuery}ms, found ${settings.length} settings`)
+
     const config: any = {
         storageType: 'local' // default
     }
@@ -104,6 +108,7 @@ export async function getAllSettings(): Promise<SettingsConfig> {
 
     config.localStoragePath = config.localStoragePath || process.env.LOCAL_STORAGE_PATH || './uploads'
 
+    console.log(`[Settings] getAllSettings() returning config with ${Object.keys(config).length} keys`)
     return config
 }
 

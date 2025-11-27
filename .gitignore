@@ -45,3 +45,9 @@ next-env.d.ts
 
 .claude/
 CLAUDE.md
+
+# database files
+*.db
+dev.db
+prisma/dev.db
+prisma/prod.db

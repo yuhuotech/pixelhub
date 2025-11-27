@@ -1,21 +1,23 @@
 # Vercel 部署指南
 
-本项目使用**分支策略**来管理不同部署环境：
+本项目采用**统一 main 分支部署**策略，所有环境都从 main 分支部署：
 
-- **main 分支**：SQLite（本地开发和 Docker 部署）
-- **vercel 分支**：PostgreSQL（Vercel 部署）
+- **本地开发**：SQLite（默认）
+- **Vercel 生产环境**：PostgreSQL（自动切换）
+
+构建时的 `build-vercel.js` 脚本会自动根据部署环境切换数据库供应商，无需维护多个分支。
 
 ## 快速开始（推荐）
 
-如果你只是想快速部署到 Vercel，**最简单的方式**：
+如果你只是想快速部署到 Vercel：
 
 1. Fork 本项目
-2. 在 Vercel 中选择部署 **`vercel` 分支**（不是 main）
+2. 在 Vercel 中选择部署 **`main` 分支**
 3. 创建 PostgreSQL 数据库（Vercel Postgres、Supabase 或其他）
 4. 设置 `DATABASE_URL` 环境变量
 5. 部署完成！
 
-**就这么简单！** 数据库配置已经在 vercel 分支中配好了，无需手动修改。
+**就这么简单！** 构建脚本会自动检测 Vercel 环境并切换到 PostgreSQL，无需修改代码。
 
 ## 为什么需要 PostgreSQL？
 
@@ -53,43 +55,38 @@
 
 Vercel 会自动添加 `DATABASE_URL` 环境变量到你的项目。
 
-### 步骤 3：修改数据库配置
+### 步骤 3：配置环境变量
 
-**修改本地 `.env` 文件（如果本地也想测试）：**
+在 Vercel Dashboard 中设置 `DATABASE_URL` 环境变量：
 
-```env
-DATABASE_URL="postgresql://user:password@host:5432/pixelhub"
+- **Vercel Postgres**：在 **Storage** → **Postgres** → **Data** 中复制连接字符串
+- **Supabase**：在项目设置 → **Database** → 复制 URI
+- **其他云数据库**：使用对应服务提供的 PostgreSQL 连接字符串
+
+**无需修改代码！** 构建脚本会自动完成：
+
+```
+npm run build:vercel (构建脚本会自动)
+├── 检测 Vercel 环境
+├── 临时替换 SQLite → PostgreSQL
+├── 运行迁移和初始化
+└── 恢复原始配置（SQLite）
 ```
 
-获取 Postgres 连接字符串的方法：
-- Vercel Postgres：在 **Storage** → **Postgres** → **Data** → 复制连接字符串
-- Supabase：在项目设置 → **Database** → 复制 URI
-
-### 步骤 4：修改 Prisma Schema
-
-修改 `prisma/schema.prisma`，将 SQLite 改为 PostgreSQL：
-
-```prisma
-datasource db {
-  provider = "postgresql"  # 改自 "sqlite"
-  url      = env("DATABASE_URL")
-}
-```
-
-### 步骤 5：提交并部署
+### 步骤 4：部署
 
 ```bash
-git add prisma/schema.prisma
-git commit -m "chore: switch to PostgreSQL for Vercel deployment"
 git push origin main
 ```
 
 Vercel 会自动触发部署，部署过程中：
-1. ✅ `prisma generate` 生成 Prisma Client
-2. ✅ `npx prisma migrate deploy` 创建表结构
-3. ✅ 应用启动
+1. ✅ 脚本检测到 Vercel 环境
+2. ✅ 自动替换为 PostgreSQL 配置
+3. ✅ `npx prisma migrate deploy` 创建表结构
+4. ✅ 初始化管理员用户和设置
+5. ✅ 应用启动
 
-### 步骤 6：验证部署
+### 步骤 5：验证部署
 
 部署完成后访问你的 Vercel 应用链接，测试以下功能：
 - ✅ 上传图片
@@ -99,45 +96,40 @@ Vercel 会自动触发部署，部署过程中：
 
 ## 本地开发和 Vercel 部署并行
 
-如果想同时维护本地 SQLite 开发和 Vercel 部署：
+现在无需创建多个分支！构建脚本自动处理：
 
-**创建两个分支：**
-
-```bash
-# 主分支：SQLite（本地开发）
-git checkout main
-# DATABASE_URL="file:./dev.db"
-# prisma/schema.prisma: provider = "sqlite"
-
-# Vercel 分支：PostgreSQL
-git checkout -b vercel
-# DATABASE_URL="postgresql://..."
-# prisma/schema.prisma: provider = "postgresql"
-# 在 Vercel 中连接这个分支部署
-```
-
-**或者直接改 schema.prisma：**
+**本地开发（SQLite）：**
 
 ```bash
-# 在 Vercel 中部署前修改一次
-git checkout vercel-ready
-# 改好 schema 和环境变量
-git push origin vercel-ready
-# 在 Vercel 中选择部署这个分支
+# 默认使用 SQLite
+npm run dev
+# 使用本地 ./dev.db
 ```
+
+**Vercel 部署（PostgreSQL）：**
+
+```bash
+# 同一份代码部署到 Vercel
+# Vercel 自动运行 npm run build:vercel
+# 脚本自动切换到 PostgreSQL
+```
+
+无需修改代码或切换分支，一个仓库支持两种环境！
 
 ## 常见问题
 
-**Q：我想在本地用 Supabase，在 Vercel 用 Vercel Postgres 可以吗？**
+**Q：我想在本地用 PostgreSQL 开发，而不是 SQLite？**
 
-A：完全可以！只需改 `DATABASE_URL` 环境变量，代码无需改动：
+A：完全可以！只需改 `.env` 中的 `DATABASE_URL`，代码无需改动：
 ```bash
-# 本地 .env
-DATABASE_URL="postgresql://supabase..."
+# 本地 .env - 使用 PostgreSQL
+DATABASE_URL="postgresql://user:password@localhost:5432/pixelhub"
 
-# Vercel 环境变量
-DATABASE_URL="postgresql://vercel..."
+# Vercel 环境变量 - 使用其他 PostgreSQL
+DATABASE_URL="postgresql://vercel-postgres-url"
 ```
+
+构建脚本会自动检测环境变量并调整配置。
 
 **Q：国内用户访问会不会很慢？**
 
@@ -146,20 +138,22 @@ A：可以选择国内数据库服务：
 - 腾讯云 CynosDB（兼容 PostgreSQL）
 - 华为云 RDS
 
-**Q：如何从 Vercel 回到本地 SQLite 开发？**
+**Q：如何从 PostgreSQL 切回本地 SQLite 开发？**
 
-A：很简单：
+A：很简单，只需改 `.env` 即可，无需改代码：
 ```bash
-# 1. 改回 schema.prisma
-provider = "sqlite"
-
-# 2. 改回 .env
+# 1. 改回 .env
 DATABASE_URL="file:./dev.db"
 
-# 3. 初始化本地数据库
+# 2. 初始化本地数据库
 npx prisma db push
 npx prisma db seed
+
+# 3. 启动开发服务器
+npm run dev
 ```
+
+代码本身无需改动，构建脚本会自动处理。
 
 **Q：数据会不会丢失？**
 
@@ -167,13 +161,9 @@ A：如果你用的是同一个 PostgreSQL 数据库（如 Supabase），改 pro
 
 ## 回到本地 SQLite 开发
 
-```bash
-# 修改 prisma/schema.prisma
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
+无需修改代码，只需改环境变量：
 
+```bash
 # 修改 .env
 DATABASE_URL="file:./dev.db"
 
@@ -182,6 +172,8 @@ npx prisma db push
 npx prisma db seed
 npm run dev
 ```
+
+构建脚本 `build-vercel.js` 会自动根据 `DATABASE_URL` 调整配置。
 
 ## 需要帮助？
 

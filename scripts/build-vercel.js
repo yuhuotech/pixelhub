@@ -57,16 +57,19 @@ if (!process.env.DATABASE_URL) {
 
 const isVercel = !!process.env.VERCEL;
 const schemaPath = path.join(__dirname, '..', 'prisma', 'schema.prisma');
+const migrationLockPath = path.join(__dirname, '..', 'prisma', 'migrations', 'migration_lock.toml');
 let originalSchema = null;
+let originalMigrationLock = null;
 
 /**
- * Store original schema before any modifications
+ * Store original files before any modifications
  */
-const storeOriginalSchema = () => {
+const storeOriginalFiles = () => {
   try {
     originalSchema = fs.readFileSync(schemaPath, 'utf-8');
+    originalMigrationLock = fs.readFileSync(migrationLockPath, 'utf-8');
   } catch (err) {
-    console.error('❌ Error reading original schema:', err.message);
+    console.error('❌ Error reading original files:', err.message);
     process.exit(1);
   }
 };
@@ -74,6 +77,7 @@ const storeOriginalSchema = () => {
 /**
  * Replace SQLite provider with PostgreSQL for Vercel deployment
  * This allows single schema.prisma file to work in both environments
+ * Also updates migration_lock.toml to match the provider switch
  */
 const replaceProviderForVercel = () => {
   if (!isVercel) {
@@ -84,18 +88,26 @@ const replaceProviderForVercel = () => {
   console.log('✓ Vercel environment detected - switching to PostgreSQL provider\n');
 
   try {
-    const modified = originalSchema.replace(
+    // Replace in schema.prisma
+    const modifiedSchema = originalSchema.replace(
       /provider\s*=\s*"sqlite"/,
       'provider = "postgresql"'
     );
 
-    if (modified === originalSchema) {
-      console.warn('⚠ Warning: Could not find SQLite provider to replace');
+    if (modifiedSchema === originalSchema) {
+      console.warn('⚠ Warning: Could not find SQLite provider in schema to replace');
       return;
     }
 
-    fs.writeFileSync(schemaPath, modified, 'utf-8');
-    console.log('✓ Prisma schema provider updated to PostgreSQL\n');
+    // Replace in migration_lock.toml
+    const modifiedLock = originalMigrationLock.replace(
+      /provider\s*=\s*"sqlite"/,
+      'provider = "postgresql"'
+    );
+
+    fs.writeFileSync(schemaPath, modifiedSchema, 'utf-8');
+    fs.writeFileSync(migrationLockPath, modifiedLock, 'utf-8');
+    console.log('✓ Prisma schema and migration lock provider updated to PostgreSQL\n');
   } catch (err) {
     console.error('❌ Error replacing provider:', err.message);
     process.exit(1);
@@ -103,16 +115,19 @@ const replaceProviderForVercel = () => {
 };
 
 /**
- * Restore original schema file (always at end)
+ * Restore original files (always at end)
  */
-const restoreOriginalSchema = () => {
-  if (!originalSchema) return;
-
+const restoreOriginalFiles = () => {
   try {
-    fs.writeFileSync(schemaPath, originalSchema, 'utf-8');
-    console.log('✓ Prisma schema restored to original state\n');
+    if (originalSchema) {
+      fs.writeFileSync(schemaPath, originalSchema, 'utf-8');
+    }
+    if (originalMigrationLock) {
+      fs.writeFileSync(migrationLockPath, originalMigrationLock, 'utf-8');
+    }
+    console.log('✓ Prisma schema and migration lock restored to original state\n');
   } catch (err) {
-    console.error('❌ Error restoring schema:', err.message);
+    console.error('❌ Error restoring files:', err.message);
   }
 };
 
@@ -187,8 +202,8 @@ function executeCommand(command) {
 // ============================================
 
 async function runBuild() {
-  // Step 1: Store original schema
-  storeOriginalSchema();
+  // Step 1: Store original files
+  storeOriginalFiles();
 
   // Step 2: Replace provider if on Vercel
   replaceProviderForVercel();
@@ -199,15 +214,15 @@ async function runBuild() {
       await executeCommand(command);
     }
 
-    // Step 4: Restore original schema
-    restoreOriginalSchema();
+    // Step 4: Restore original files
+    restoreOriginalFiles();
 
     console.log('✅ Vercel build completed successfully!');
     console.log('🎉 Application is ready for deployment\n');
     process.exit(0);
   } catch (error) {
-    // Always restore schema, even on error
-    restoreOriginalSchema();
+    // Always restore files, even on error
+    restoreOriginalFiles();
 
     console.error(`\n❌ Build failed: ${error.message}\n`);
     process.exit(1);
